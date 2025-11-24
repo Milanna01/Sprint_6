@@ -6,27 +6,35 @@
 🏗️ Структура проекта
 text
 Sprint_6/
-├── 📁 allure_results/          # Результаты выполнения тестов для Allure отчетов
-├── 📁 pages/                   # Page Object классы
-│   ├── base_page.py           # Базовый класс с общими методами
-│   ├── main_page.py           # Главная страница
-│   ├── order_page.py          # Страница оформления заказа
-│   └── faq_page.py            # Страница с FAQ
-├── 📁 locators/               # Локаторы элементов
-│   ├── main_page_locators.py  # Локаторы главной страницы
-│   ├── order_page_locators.py # Локаторы страницы заказа
-│   └── faq_locators.py        # Локаторы FAQ раздела
-├── 📁 tests/                  # Тестовые сценарии
-│   ├── test_faq_page.py       # Тесты раздела FAQ
-│   ├── test_order_page.py     # Тесты оформления заказа
-│   └── test_logo_navigation.py # Тесты навигации
-├── 📁 __pycache__/            # Кэш-файлы Python (автогенерация)
-├── 📄 data.py                 # Тестовые данные и конфигурация
-├── 📄 urls.py                 # URL адреса приложения
-├── 📄 conftest.py             # Фикстуры Pytest
-├── 📄 requirements.txt        # Зависимости проекта
-├── 📄 .gitignore              # Игнорируемые файлы
-└── 📄 README.md               # Документация
+├── 📊 allure_results/                 # Allure отчеты о тестировании
+│   ├── categories.json
+│   ├── executor.json
+│   ├── history/
+│   └── ... (результаты тестов)
+├── 🐍 __pycache__/                    # Кэш-файлы Python
+├── 🧩 pages/                          # Page Object Model
+│   ├── __init__.py
+│   ├── base_page.py                   # 🔧 Базовый класс
+│   ├── main_page.py                   # 🏠 Главная страница
+│   ├── order_page.py                  # 🛒 Страница заказа
+│   └── faq_page.py                    # ❓ Страница FAQ
+├── 🔍 locators/                       # Локаторы элементов
+│   ├── __init__.py
+│   ├── main_page_locators.py          # 🎯 Локаторы главной
+│   ├── order_page_locators.py         # 📝 Локаторы заказа
+│   └── faq_locators.py                # 💬 Локаторы FAQ
+├── ✅ tests/                          # Тестовые сценарии
+│   ├── __init__.py
+│   ├── test_faq_page.py               # 🧪 Тесты FAQ
+│   ├── test_order_page.py             # 🧪 Тесты заказа
+│   └── test_logo_navigation.py        # 🧪 Тесты навигации
+├── ⚙️  conftest.py                    # Фикстуры Pytest
+├── 📝 data.py                         # Тестовые данные
+├── 🌐 urls.py                         # URL адреса
+├── 📦 requirements.txt                # Зависимости
+├── 🚫 .gitignore                      # Игнорируемые файлы
+└── 📖 README.md                       # Документация
+
 🚀 Быстрый старт
 Предварительные требования
 Python 3.9 или выше
@@ -142,5 +150,6 @@ urls.py - константы с URL адресами приложения
 allure_results/ - содержит сырые данные для генерации Allure отчетов
 
 __pycache__/ - автоматически сгенерированные кэш-файлы Python для ускорения импорта
+
 
 
