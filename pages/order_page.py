@@ -2,13 +2,12 @@ import allure
 import sys
 import os
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
 
 # Добавляем путь к корневой директории проекта
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-# Абсолютный импорт вместо относительного
 from pages.base_page import BasePage
+from locators.order_page_locators import OrderPageLocators
 
 
 class OrderPage(BasePage):
@@ -21,14 +20,12 @@ class OrderPage(BasePage):
 
     @allure.step('Проверить отображение кнопки статуса заказа')
     def check_status_button_displayed(self):
-        from locators.order_page_locators import OrderPageLocators
         return self.is_visible(OrderPageLocators.ORDER_STATUS_BUTTON)
 
     @allure.step('Заполнить первую часть формы заказа')
     def fill_first_form(self, user_data):
-        from locators.order_page_locators import OrderPageLocators
-        
-        self.wait.until(EC.visibility_of_element_located(OrderPageLocators.NAME_INPUT))
+        # Ждем загрузки формы
+        self.wait_for_visibility(OrderPageLocators.NAME_INPUT)
         
         # Заполнение персональных данных
         self.type(OrderPageLocators.NAME_INPUT, user_data.name)
@@ -48,9 +45,8 @@ class OrderPage(BasePage):
 
     @allure.step('Заполнить вторую часть формы заказа')
     def fill_second_form(self, user_data):
-        from locators.order_page_locators import OrderPageLocators
-        
-        self.wait.until(EC.visibility_of_element_located(OrderPageLocators.DELIVERY_DATE_INPUT))
+        # Ждем загрузки второй формы
+        self.wait_for_visibility(OrderPageLocators.DELIVERY_DATE_INPUT)
         
         # Заполнение даты
         self.type(OrderPageLocators.DELIVERY_DATE_INPUT, user_data.date)
@@ -73,17 +69,13 @@ class OrderPage(BasePage):
 
     @allure.step('Выбрать срок аренды: {period}')
     def select_rental_period(self, period):
-        from locators.order_page_locators import OrderPageLocators
-        
         self.click(OrderPageLocators.RENTAL_PERIOD_FIELD)
         period_locator = (By.XPATH, f"//div[contains(@class, 'Dropdown-option') and text()='{period}']")
         self.click(period_locator)
 
     @allure.step('Подтвердить заказ')
     def confirm_order(self):
-        from locators.order_page_locators import OrderPageLocators
-        
-        self.wait.until(EC.visibility_of_element_located(OrderPageLocators.CONFIRM_ORDER_BUTTON))
+        self.wait_for_visibility(OrderPageLocators.CONFIRM_ORDER_BUTTON)
         self.click(OrderPageLocators.CONFIRM_ORDER_BUTTON)
 
     @allure.step('Полное оформление заказа')
@@ -92,5 +84,3 @@ class OrderPage(BasePage):
         self.fill_first_form(user_data)
         self.fill_second_form(user_data)
         return self.check_status_button_displayed()
-
-

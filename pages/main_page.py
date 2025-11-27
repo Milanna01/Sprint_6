@@ -1,14 +1,13 @@
 import allure
 import sys
 import os
-import time
-from selenium.webdriver.support import expected_conditions as EC
 
 # Добавляем путь к корневой директории проекта
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from pages.base_page import BasePage
 from urls import URLs
+from locators.main_page_locators import MainPageLocators
 
 
 class MainPage(BasePage):
@@ -24,42 +23,53 @@ class MainPage(BasePage):
 
     @allure.step("Принять куки")
     def accept_cookies(self):
-        from locators.main_page_locators import MainPageLocators
         if self.is_visible(MainPageLocators.COOKIE_ACCEPT_BUTTON):
             self.click(MainPageLocators.COOKIE_ACCEPT_BUTTON)
 
-    @allure.step("Начать заказ через {button_type} кнопку")
-    def start_order(self, button_type="верхнюю"):
-        from locators.main_page_locators import MainPageLocators
-        if button_type == "верхнюю":
-            self.click(MainPageLocators.ORDER_BUTTON_HEADER)
-        else:
-            self.scroll_to(MainPageLocators.ORDER_BUTTON_MAIN)
-            self.click(MainPageLocators.ORDER_BUTTON_MAIN)
+    @allure.step("Начать заказ через верхнюю кнопку")
+    def start_order_from_header(self):
+        """Начать заказ через кнопку в хедере"""
+        self.click(MainPageLocators.ORDER_BUTTON_HEADER)
 
-    @allure.step("Кликнуть на логотип {logo_type}")
-    def click_logo(self, logo_type="Самоката"):
-        from locators.main_page_locators import MainPageLocators
-        if logo_type == "Самоката":
-            self.click(MainPageLocators.LOGO_SCOOTER)
-        else:
-            self.click(MainPageLocators.LOGO_YANDEX)
+    @allure.step("Начать заказ через нижнюю кнопку")
+    def start_order_from_main(self):
+        """Начать заказ через кнопку в основной части страницы"""
+        self.scroll_to(MainPageLocators.ORDER_BUTTON_MAIN)
+        self.click(MainPageLocators.ORDER_BUTTON_MAIN)
+
+    @allure.step("Начать заказ через указанную кнопку")
+    def start_order_by_locator(self, button_locator, scroll_to_button=False):
+        """
+        Универсальный метод для начала заказа через указанную кнопку
+        
+        Args:
+            button_locator: Локатор кнопки заказа
+            scroll_to_button: Нужно ли скроллить к кнопке (по умолчанию False)
+        """
+        if scroll_to_button:
+            self.scroll_to(button_locator)
+        self.click(button_locator)
+
+    @allure.step("Кликнуть на логотип Самоката")
+    def click_scooter_logo(self):
+        self.click(MainPageLocators.LOGO_SCOOTER)
+
+    @allure.step("Кликнуть на логотип Яндекс")
+    def click_yandex_logo(self):
+        self.click(MainPageLocators.LOGO_YANDEX)
 
     @allure.step("Перейти к разделу FAQ")
     def go_to_faq_section(self):
-        from locators.main_page_locators import MainPageLocators
         self.scroll_to(MainPageLocators.FAQ_SECTION)
 
     @allure.step("Раскрыть вопрос FAQ: {question_name}")
     def expand_faq_question(self, question_name):
-        from locators.main_page_locators import MainPageLocators
         question_locator = getattr(MainPageLocators, f"QUESTION_{question_name.upper()}")
         self.scroll_to(question_locator)
         self.click(question_locator)
 
     @allure.step("Получить текст ответа на вопрос: {question_name}")
     def get_faq_answer(self, question_name):
-        from locators.main_page_locators import MainPageLocators
         answer_locator = getattr(MainPageLocators, f"ANSWER_{question_name.upper()}")
         return self.get_text(answer_locator)
 
@@ -70,39 +80,35 @@ class MainPage(BasePage):
     @allure.step("Проверить переход на Дзен")
     def check_yandex_redirect(self):
         """Проверка редиректа на Дзен через логотип Яндекс"""
-        from locators.main_page_locators import MainPageLocators
+        # Получаем текущее количество окон и handle текущей вкладки
+        original_windows_count = self.get_window_handles_count()
+        original_tab = self.get_current_window_handle()
         
-        # Запоминаем текущее количество окон
-        original_windows_count = len(self.driver.window_handles)
-        original_tab = self.driver.current_window_handle
-        
+        # Кликаем на логотип Яндекс
         self.click(MainPageLocators.LOGO_YANDEX)
         
         # Ждем открытия нового окна/вкладки
-        self.wait.until(EC.number_of_windows_to_be(original_windows_count + 1))
+        self.wait_for_new_window(original_windows_count)
         
-        # Находим новую вкладку
-        new_tab = [tab for tab in self.driver.window_handles if tab != original_tab][0]
-        self.driver.switch_to.window(new_tab)
+        # Переключаемся на новую вкладку
+        self.switch_to_new_window(original_tab)
         
         try:
-            # Ждем загрузки страницы и проверяем URL
-            self.wait.until(EC.url_contains("dzen.ru"))
-            return "dzen.ru" in self.driver.current_url
+            # Ждем загрузки страницы Дзена и проверяем URL
+            self.wait_for_url_contains("dzen.ru")
+            return "dzen.ru" in self.get_current_url()
         finally:
             # Закрываем новую вкладку и возвращаемся на исходную
-            self.driver.close()
-            self.driver.switch_to.window(original_tab)
+            self.close_tab()
+            self.switch_to_original_tab(original_tab)
 
     @allure.step("Получить текст вопроса FAQ: {question_name}")
     def get_faq_question_text(self, question_name):
         """Получить текст вопроса"""
-        from locators.main_page_locators import MainPageLocators
         question_locator = getattr(MainPageLocators, f"QUESTION_{question_name.upper()}")
         return self.get_text(question_locator)
 
     @allure.step("Проверить видимость ответа на вопрос: {question_name}")
     def is_faq_answer_visible(self, question_name):
-        from locators.main_page_locators import MainPageLocators
         answer_locator = getattr(MainPageLocators, f"ANSWER_{question_name.upper()}")
         return self.is_visible(answer_locator)
