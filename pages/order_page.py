@@ -94,7 +94,3 @@ class OrderPage(BasePage):
         return self.check_status_button_displayed()
 
 
-# условие для предотвращения запуска напрямую
-if __name__ == "__main__":
-    print("Этот файл предназначен для импорта, а не для прямого запуска.")
-    print("Запускайте тесты через: python -m pytest tests/")

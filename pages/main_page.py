@@ -1,13 +1,14 @@
 import allure
 import sys
 import os
-from selenium.webdriver.common.by import By
+import time
+from selenium.webdriver.support import expected_conditions as EC
 
 # Добавляем путь к корневой директории проекта
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-# Абсолютный импорт вместо относительного
 from pages.base_page import BasePage
+from urls import URLs
 
 
 class MainPage(BasePage):
@@ -15,7 +16,7 @@ class MainPage(BasePage):
     
     def __init__(self, driver):
         super().__init__(driver)
-        self.url = "https://qa-scooter.praktikum-services.ru/"
+        self.url = URLs.scooter_url
 
     @allure.step("Открыть главную страницу")
     def open(self):
@@ -71,16 +72,25 @@ class MainPage(BasePage):
         """Проверка редиректа на Дзен через логотип Яндекс"""
         from locators.main_page_locators import MainPageLocators
         
+        # Запоминаем текущее количество окон
+        original_windows_count = len(self.driver.window_handles)
         original_tab = self.driver.current_window_handle
+        
         self.click(MainPageLocators.LOGO_YANDEX)
         
-        self.wait_for_new_tab()
+        # Ждем открытия нового окна/вкладки
+        self.wait.until(EC.number_of_windows_to_be(original_windows_count + 1))
+        
+        # Находим новую вкладку
         new_tab = [tab for tab in self.driver.window_handles if tab != original_tab][0]
         self.driver.switch_to.window(new_tab)
         
         try:
+            # Ждем загрузки страницы и проверяем URL
+            self.wait.until(EC.url_contains("dzen.ru"))
             return "dzen.ru" in self.driver.current_url
         finally:
+            # Закрываем новую вкладку и возвращаемся на исходную
             self.driver.close()
             self.driver.switch_to.window(original_tab)
 
@@ -96,20 +106,3 @@ class MainPage(BasePage):
         from locators.main_page_locators import MainPageLocators
         answer_locator = getattr(MainPageLocators, f"ANSWER_{question_name.upper()}")
         return self.is_visible(answer_locator)
-
-    @allure.step("Дождаться открытия новой вкладки")
-    def wait_for_new_tab(self, timeout=10):
-        """Ожидание открытия новой вкладки"""
-        import time
-        start_time = time.time()
-        while time.time() - start_time < timeout:
-            if len(self.driver.window_handles) > 1:
-                return True
-            time.sleep(0.5)
-        return False
-
-
-# условие для предотвращения запуска напрямую
-if __name__ == "__main__":
-    print("Этот файл предназначен для импорта, а не для прямого запуска.")
-    print("Запускайте тесты через: python -m pytest tests/")

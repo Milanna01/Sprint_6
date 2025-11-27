@@ -1,12 +1,13 @@
 import allure
 import sys
 import os
-from selenium.webdriver.support import expected_conditions as EC
 
 # Добавляем путь к корневой директории проекта
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
+# Импорты на уровне модуля
 from pages.base_page import BasePage
+from locators.faq_locators import FAQLocators
 
 
 class QuestionPage(BasePage):
@@ -14,29 +15,63 @@ class QuestionPage(BasePage):
 
     @allure.step("Проскроллить к разделу FAQ")
     def scroll_to_faq_section(self):
-        from locators.faq_locators import FAQLocators
+        """Проскроллить к разделу часто задаваемых вопросов"""
         self.scroll_to(FAQLocators.FAQ_SECTION)
 
     @allure.step("Кликнуть на вопрос #{index}")
     def click_question(self, index):
-        from locators.faq_locators import FAQLocators
+        """
+        Кликнуть на вопрос по индексу
+        
+        Args:
+            index (int): Индекс вопроса (0-7)
+        """
+        # Используем методы из BasePage вместо прямого вызова WebDriverWait
         self.scroll_to(FAQLocators.question[index])
-        self.click(FAQLocators.question[index])
+        self.click_element(FAQLocators.question[index])
 
     @allure.step("Получить текст вопроса #{index}")
     def get_question_text(self, index):
-        from locators.faq_locators import FAQLocators
-        self.wait.until(EC.visibility_of_element_located(FAQLocators.question[index]))
-        return self.get_text(FAQLocators.question[index])
+        """
+        Получить текст вопроса по индексу
+        
+        Args:
+            index (int): Индекс вопроса (0-7)
+            
+        Returns:
+            str: Текст вопроса
+        """
+        return self.get_element_text(FAQLocators.question[index])
 
     @allure.step("Получить текст ответа #{index}")
     def get_answer_text(self, index):
-        from locators.faq_locators import FAQLocators
-        self.wait.until(EC.visibility_of_element_located(FAQLocators.answer[index]))
-        return self.get_text(FAQLocators.answer[index])
+        """
+        Получить текст ответа по индексу
+        
+        Args:
+            index (int): Индекс ответа (0-7)
+            
+        Returns:
+            str: Текст ответа
+        """
+        return self.get_element_text(FAQLocators.answer[index])
 
+    @allure.step("Проверить видимость ответа #{index}")
+    def is_answer_visible(self, index):
+        """
+        Проверить видимость ответа по индексу
+        
+        Args:
+            index (int): Индекс ответа (0-7)
+            
+        Returns:
+            bool: True если ответ видим
+        """
+        return self.is_element_visible(FAQLocators.answer[index])
 
-# условие для предотвращения запуска напрямую
-if __name__ == "__main__":
-    print("Этот файл предназначен для импорта, а не для прямого запуска.")
-    print("Запускайте тесты через: python -m pytest tests/test_faq_page.py")
+    @allure.step("Раскрыть все вопросы FAQ и проверить ответы")
+    def expand_all_questions(self):
+        """Раскрыть все вопросы и проверить что ответы отображаются"""
+        for i in range(8):
+            self.click_question(i)
+            assert self.is_answer_visible(i), f"Ответ на вопрос {i} не отображается"

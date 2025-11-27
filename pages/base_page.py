@@ -1,7 +1,9 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support.ui import Select
 import allure
+import logging
 
 
 class BasePage:
@@ -10,6 +12,7 @@ class BasePage:
     def __init__(self, driver):
         self.driver = driver
         self.wait = WebDriverWait(driver, 10)
+        self.logger = logging.getLogger(__name__)
 
     @allure.step("Скролл к элементу {locator}")
     def scroll_to(self, locator):
@@ -122,15 +125,17 @@ class BasePage:
         """Сделать скриншот и прикрепить к Allure отчету"""
         screenshot = self.driver.get_screenshot_as_png()
         allure.attach(screenshot, name=name, attachment_type=allure.attachment_type.PNG)
+        self.logger.info(f"Скриншот '{name}' сохранен в Allure отчет")
         return screenshot
 
     @allure.step("Выбрать опцию из выпадающего списка по тексту")
     def select_dropdown_by_text(self, dropdown_locator, option_text):
         """Выбрать опцию из выпадающего списка по видимому тексту"""
-        from selenium.webdriver.support.ui import Select
         dropdown = self.wait.until(EC.element_to_be_clickable(dropdown_locator))
         select = Select(dropdown)
         select.select_by_visible_text(option_text)
+
+    # ========== ДОБАВЛЕННЫЕ МЕТОДЫ ДЛЯ FAQ_PAGE ==========
 
     @allure.step("Дождаться загрузки элемента {locator}")
     def wait_for_element(self, locator, timeout=10):
